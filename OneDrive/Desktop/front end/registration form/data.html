@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Part 2: Data Table</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 14px;
+            border: 1.5px solid #dcdfe6;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-box:focus {
+            border-color: #3498db;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: right;
+            border-bottom: 1px solid #eef2f5;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #34495e;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Data Directory</h2>
+
+        <div class="controls">
+            <input type="text" id="searchInput" class="search-box" placeholder="Search by name, age, or city...">
+            <button class="btn" id="sortNameBtn">Sort by Name</button>
+            <button class="btn" id="sortAgeBtn">Sort by Age</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>City</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Rows will be dynamically rendered here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Data Array
+        const people = [
+            { id: 1, name: "Ahmed Hassan", age: 24, city: "Cairo" },
+            { id: 2, name: "Sarah Ali", age: 21, city: "Alexandria" },
+            { id: 3, name: "Mohamed Ibrahim", age: 29, city: "Giza" },
+            { id: 4, name: "Nour Mahmoud", age: 22, city: "Mansoura" },
+            { id: 5, name: "Omar Khaled", age: 27, city: "Cairo" },
+            { id: 6, name: "Layla Tarek", age: 20, city: "Alexandria" },
+            { id: 7, name: "Youssef Amr", age: 25, city: "Aswan" }
+        ];
+
+        let currentData = [...people];
+        let nameSortAsc = true;
+        let ageSortAsc = true;
+
+        const tableBody = document.getElementById('tableBody');
+        const searchInput = document.getElementById('searchInput');
+        const sortNameBtn = document.getElementById('sortNameBtn');
+        const sortAgeBtn = document.getElementById('sortAgeBtn');
+
+        // Render Table Function
+        function renderTable(data) {
+            tableBody.innerHTML = '';
+
+            if (data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="no-results">No matching records found.</td></tr>`;
+                return;
+            }
+
+            data.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.name}</td>
+                    <td>${item.age}</td>
+                    <td>${item.city}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Live Search Handler
+        searchInput.addEventListener('input', function (e) {
+            const query = e.target.value.toLowerCase().trim();
+            currentData = people.filter(item => {
+                return (
+                    item.name.toLowerCase().includes(query) ||
+                    item.age.toString().includes(query) ||
+                    item.city.toLowerCase().includes(query)
+                );
+            });
+            renderTable(currentData);
+        });
+
+        // Sort by Name Handler
+        sortNameBtn.addEventListener('click', function () {
+            currentData.sort((a, b) => {
+                return nameSortAsc 
+                    ? a.name.localeCompare(b.name) 
+                    : b.name.localeCompare(a.name);
+            });
+            nameSortAsc = !nameSortAsc;
+            sortNameBtn.textContent = `Sort by Name ${nameSortAsc ? '▲' : '▼'}`;
+            renderTable(currentData);
+        });
+
+        // Sort by Age Handler
+        sortAgeBtn.addEventListener('click', function () {
+            currentData.sort((a, b) => {
+                return ageSortAsc ? a.age - b.age : b.age - a.age;
+            });
+            ageSortAsc = !ageSortAsc;
+            sortAgeBtn.textContent = `Sort by Age ${ageSortAsc ? '▲' : '▼'}`;
+            renderTable(currentData);
+        });
+
+        // Initial Render
+        renderTable(currentData);
+    </script>
+
+</body>
+</html>
